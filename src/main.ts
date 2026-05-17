@@ -250,7 +250,7 @@ function buildLayout(): void {
 
   // W[2] + b[2] + Δb[2].
   const wBox = document.createElement('div');
-  wBox.className = 'panel';
+  wBox.className = 'panel weights-panel';
   wBox.style.display = 'flex';
   wBox.style.flexDirection = 'column';
   wBox.style.gap = '0';
@@ -271,6 +271,7 @@ function buildLayout(): void {
   renderMath(wHeaderRow);
   wBox.appendChild(wHeaderRow);
   const wRow = document.createElement('div');
+  wRow.className = 'weights-table-row';
   wRow.style.display = 'flex';
   wRow.style.gap = '12px';
   wRow.style.alignItems = 'flex-start';
@@ -286,6 +287,7 @@ function buildLayout(): void {
 
   // Charts.
   const charts = document.createElement('div');
+  charts.className = 'charts-row';
   charts.style.display = 'grid';
   charts.style.gridTemplateColumns = '1fr 1fr';
   charts.style.gap = '12px';
