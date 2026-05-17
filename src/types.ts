@@ -77,7 +77,7 @@ export interface EpochSnapshot {
   meanTestLoss: number; // ½‖a − y‖² averaged across the test set
   testCorrect: number;
   testTotal: number;
-  label?: string;       // e.g. "start", "sample 100", or "epoch 1"
+  label?: string;       // e.g. "start", "update 100", or "epoch 1"
 }
 
 /**

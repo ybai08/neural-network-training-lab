@@ -158,7 +158,7 @@ async function run(): Promise<void> {
         if (stepMode || sentSampleForBatch) post({ type: 'miniBatchApplied' });
         samplesSeen += end - start;
         if (shouldPostQuickMetric(samplesSeen)) {
-          postEvaluation(net, quickTest, epoch + samplesSeen / train.length, `sample ${samplesSeen.toLocaleString()}`);
+          postEvaluation(net, quickTest, epoch + samplesSeen / train.length, `update ${samplesSeen.toLocaleString()}`);
         }
       }
 

@@ -33,7 +33,7 @@ export class LineChart {
 
     this.placeholder = document.createElement('div');
     this.placeholder.className = 'chart-placeholder';
-    this.placeholder.textContent = 'Graph starts after 50 training samples.';
+    this.placeholder.textContent = 'Graph starts after 50 training updates.';
 
     this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.svg.setAttribute('preserveAspectRatio', 'none');
@@ -63,7 +63,7 @@ export class LineChart {
   clear(): void {
     this.values = [];
     this.valueEl.textContent = '';
-    this.placeholder.textContent = 'Graph starts after 50 training samples.';
+    this.placeholder.textContent = 'Graph starts after 50 training updates.';
     this.path.setAttribute('points', '');
     this.markers.replaceChildren();
   }
