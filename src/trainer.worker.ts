@@ -24,6 +24,9 @@ let throttleMs = 0;
 let stopRequested = false;
 let started = false;
 const QUICK_TEST_COUNT = 500;
+const MIN_AUTO_PREVIEW_MS = 100;
+const AUTO_YIELD_EVERY = 200;
+let lastAutoPreviewAt = 0;
 
 // Step-mode gate. When step mode is on, after each sample we await this promise;
 // it resolves when the main thread posts {type:'stepNext'} (or step mode flips off).
@@ -40,6 +43,7 @@ ctx.onmessage = (ev: MessageEvent<MainToWorker>) => {
       epochs = msg.epochs;
       seed = msg.seed;
       stepMode = msg.stepMode;
+      lastAutoPreviewAt = 0;
       // Defer the actual work until 'start'; init just stores parameters.
       break;
     case 'start':
@@ -56,6 +60,7 @@ ctx.onmessage = (ev: MessageEvent<MainToWorker>) => {
       break;
     case 'setStepMode':
       stepMode = msg.on;
+      lastAutoPreviewAt = 0;
       // Flipping OFF in mid-flight releases the gate so training resumes free-running.
       if (!stepMode) releaseStepGate();
       break;
@@ -81,7 +86,11 @@ function waitForStep(): Promise<void> {
     return new Promise<void>(resolve => { stepResolve = resolve; });
   }
   if (throttleMs > 0) return new Promise(resolve => setTimeout(resolve, throttleMs));
-  return Promise.resolve();
+  return yieldToEventLoop();
+}
+
+function yieldToEventLoop(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
 }
 
 async function run(): Promise<void> {
@@ -132,14 +141,21 @@ async function run(): Promise<void> {
         const batch: { x: Vector; y: Vector }[] = [];
         for (let k = start; k < end; k++) batch.push(train[indices[k]]);
 
+        let sentSampleForBatch = false;
         await net.updateMiniBatch(batch, learningRate, async (predicted) => {
           if (!net || !net.lastOutputTrace || !net.lastHiddenTrace) return;
-          const snap = buildSnapshot(net, predicted, train[indices[start + net.miniBatchSampleIndex]]);
-          post({ type: 'sample', snapshot: snap });
-          await waitForStep();
+          const sampleNo = samplesSeen + net.miniBatchSampleIndex + 1;
+          if (shouldPostSamplePreview(sampleNo)) {
+            const snap = buildSnapshot(net, predicted, train[indices[start + net.miniBatchSampleIndex]]);
+            post({ type: 'sample', snapshot: snap });
+            sentSampleForBatch = true;
+            await waitForStep();
+          } else if (!stepMode && sampleNo % AUTO_YIELD_EVERY === 0) {
+            await yieldToEventLoop();
+          }
         });
         if (stopRequested) break;
-        post({ type: 'miniBatchApplied' });
+        if (stepMode || sentSampleForBatch) post({ type: 'miniBatchApplied' });
         samplesSeen += end - start;
         if (shouldPostQuickMetric(samplesSeen)) {
           postEvaluation(net, quickTest, epoch + samplesSeen / train.length, `sample ${samplesSeen.toLocaleString()}`);
@@ -212,6 +228,19 @@ function oneHot(label: number, classes: number): Vector {
 function shouldPostQuickMetric(samplesSeen: number): boolean {
   if (samplesSeen <= 500) return samplesSeen % 50 === 0;
   return samplesSeen % 1000 === 0;
+}
+
+function shouldPostSamplePreview(sampleNo: number): boolean {
+  if (stepMode) return true;
+  if (sampleNo === 1) {
+    lastAutoPreviewAt = performance.now();
+    return true;
+  }
+  const now = performance.now();
+  const previewInterval = Math.max(MIN_AUTO_PREVIEW_MS, throttleMs);
+  if (now - lastAutoPreviewAt < previewInterval) return false;
+  lastAutoPreviewAt = now;
+  return true;
 }
 
 function postEvaluation(

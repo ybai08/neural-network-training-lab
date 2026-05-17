@@ -525,7 +525,9 @@ function handleWorkerMessage(ev: MessageEvent<WorkerToMain>): void {
       lastPredictedLabel = msg.snapshot.predictedLabel;
       miniBatchSize = msg.snapshot.miniBatchSize;
       // Mini-batch status line + label readouts.
-      nodes.miniBatchText.textContent = 'Sample update: weights apply after this example';
+      nodes.miniBatchText.textContent = stepMode
+        ? 'Sample update: weights apply after this example'
+        : 'Auto preview: showing periodic samples';
       nodes.miniBatchText.style.color = 'var(--gold)';
       nodes.trueLabelEl.textContent = `${msg.snapshot.trueLabel}`;
       nodes.predictedLabelEl.textContent = `${msg.snapshot.predictedLabel}`;
