@@ -1,0 +1,19 @@
+{
+  "name": "nn-teaching-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "katex": "^0.16.11"
+  },
+  "devDependencies": {
+    "@types/katex": "^0.16.7",
+    "typescript": "~5.5.4",
+    "vite": "^5.4.10"
+  }
+}
