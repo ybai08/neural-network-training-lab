@@ -90,16 +90,6 @@ function buildLayout(): void {
   const app = document.getElementById('app')!;
   app.style.gridTemplateRows = 'auto 1fr auto';
 
-  const mobileNotice = document.createElement('div');
-  mobileNotice.className = 'mobile-desktop-notice';
-  mobileNotice.innerHTML = `
-    <div class="mobile-notice-card">
-      <h1>Neural Network Training Lab</h1>
-      <p>This interactive lab is designed for a desktop or laptop screen.</p>
-      <p>Please open it on a larger device to use the network diagram, tables, and step-by-step controls.</p>
-    </div>`;
-  document.body.insertBefore(mobileNotice, app);
-
   // ── HEADER: lesson title + status + phase guide ──────────────────────────
   const header = document.createElement('div');
   header.className = 'lesson-header';
