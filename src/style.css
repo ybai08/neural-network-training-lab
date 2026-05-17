@@ -746,10 +746,13 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
 
 @media (max-width: 980px) {
   html, body {
+    width: 100%;
+    max-width: 100%;
     height: auto;
     min-height: 100%;
-    overflow-x: hidden;
+    overflow-x: clip;
     overflow-y: auto;
+    overscroll-behavior-x: none;
   }
   body { font-size: 12px; }
   #app {
@@ -759,15 +762,29 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
     max-width: 100vw;
     min-height: 100dvh;
     height: auto;
-    overflow: visible;
+    overflow-x: clip;
+    overflow-y: visible;
     padding: 8px;
     gap: 7px;
   }
   #main {
     min-width: 0;
-    overflow: visible;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    overflow-y: visible;
     gap: 10px;
     padding-bottom: 6px;
+  }
+  .row,
+  .panel,
+  .details-body,
+  .sample-card,
+  .diagram-panel,
+  .learning-workspace {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
   .lesson-title-row,
   .status-row {
@@ -869,7 +886,13 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
   .diagram-header small {
     display: none;
   }
-  .diagram-panel .diagram-wrap { min-height: 260px; }
+  .diagram-panel .diagram-wrap {
+    flex: 0 0 clamp(270px, 72vw, 340px);
+    width: 100%;
+    max-width: 100%;
+    min-height: 270px;
+    height: clamp(270px, 72vw, 340px);
+  }
   .learning-workspace,
   .hidden-bottom-section {
     grid-template-columns: 1fr;
@@ -884,8 +907,11 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
   .output-learning-panel,
   .weights-panel,
   .hidden-activations-panel {
+    max-width: 100%;
     overflow-x: auto;
+    overflow-y: hidden;
     -webkit-overflow-scrolling: touch;
+    contain: paint;
   }
   .output-learning-block.wide,
   .weights-table-row,
