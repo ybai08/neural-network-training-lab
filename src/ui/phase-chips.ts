@@ -19,7 +19,7 @@ const CHIP_LABELS: Record<Phase, string> = {
  */
 const EXPLAINERS: Record<Phase, string> = {
   [Phase.Forward]:
-    "Feed a sample $x$ (196-dimensional input vector, each element in the range $[0,1]$ representing the brightness of a pixel). $W_1$ and $W_2$ are matrices representing the network's mappings from input $\\to$ hidden and hidden $\\to$ output, respectively. The elements in $W_1$ and $W_2$ are originally initialized to random numbers:\n" +
+    "Feed a sample $x$ (196-dimensional input vector, each element in the range $[0,1]$ representing the brightness of a pixel). $W_1$ and $W_2$ are matrices representing the network's mappings from input $\\to$ hidden and hidden $\\to$ output, respectively. The elements in $W_1$ and $W_2$ are originally initialized to random numbers; $b_1$ and $b_2$ are randomized bias vectors:\n" +
     "$$\\begin{array}{ll}" +
     "z_1 = W_1x + b_1 & a_1 = \\sigma(z_1) \\\\" +
     "z_2 = W_2a_1 + b_2 & a_2 = \\sigma(z_2)" +
