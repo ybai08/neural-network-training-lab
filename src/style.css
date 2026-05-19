@@ -204,7 +204,7 @@ body {
 .output-learning-panel {
   padding-bottom: 6px;
 }
-.output-learning-panel > .panel-header {
+.output-learning-title {
   margin-bottom: 4px;
 }
 .output-learning-body { min-width: 0; }
@@ -212,20 +212,15 @@ body {
   visibility: hidden;
   pointer-events: none;
 }
-.output-equation-row {
-  display: flex;
-  align-items: stretch;
-  gap: 12px;
-  min-width: max-content;
-  margin-bottom: 4px;
-}
 .gradient-formula-heading {
-  flex: 0 0 800px;
+  width: 800px;
+  min-height: 20px;
   display: flex;
   align-items: center;
 }
 .output-cost-equation {
-  flex: 0 0 224px;
+  flex: 0 0 auto;
+  width: 224px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,12 +239,6 @@ body {
 .cost-result,
 .cost-result .katex {
   color: var(--gold);
-}
-.output-gradient-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  min-width: max-content;
 }
 .output-vector-grid {
   display: grid;
@@ -276,6 +265,25 @@ body {
 }
 .output-learning-block.wide {
   min-width: 0;
+  display: grid;
+  grid-template-columns: 800px 224px;
+  grid-template-areas: "gradient state";
+  column-gap: 12px;
+  align-items: start;
+  width: max-content;
+}
+.output-gradient-group,
+.output-state-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.output-gradient-group {
+  grid-area: gradient;
+}
+.output-state-group {
+  grid-area: state;
 }
 .output-vector-grid .vector-view,
 .output-vector-grid .vv-grid {
@@ -904,7 +912,6 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
     min-width: 0;
     width: 100%;
   }
-  .output-learning-panel,
   .weights-panel,
   .hidden-activations-panel {
     max-width: 100%;
@@ -913,13 +920,58 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
     -webkit-overflow-scrolling: touch;
     contain: paint;
   }
-  .output-learning-block.wide,
   .weights-table-row,
   .hidden-activations-panel .matrix-view {
     width: max-content;
   }
+  .output-learning-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    overflow: visible;
+  }
+  .output-learning-body,
+  .output-learning-block.wide {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .output-learning-block.wide {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .output-state-group,
+  .output-gradient-group {
+    width: 100%;
+    max-width: 100%;
+    padding: 8px;
+    background: var(--bg-cell);
+    border: 1px solid var(--border);
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    contain: paint;
+  }
+  .output-state-group {
+    order: 0;
+  }
+  .output-gradient-group {
+    order: 1;
+  }
+  .output-state-group .output-cost-equation {
+    justify-content: flex-start;
+  }
+  .output-state-group .output-vector-grid,
+  .output-gradient-group .matrix-view {
+    width: max-content;
+  }
   .gradient-formula-heading {
-    flex-basis: 800px;
+    width: 800px;
   }
   .focus-panel,
   .hidden-delta-panel {

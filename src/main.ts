@@ -197,8 +197,10 @@ function buildLayout(): void {
   // Row 2: backprop math — vectors | a[1]+perSample | ΔW[2].
   const row2 = document.createElement('div');
   row2.className = 'row panel output-learning-panel';
-  row2.innerHTML = '<div class="panel-header">Output layer learning: compare prediction to target, form $\\delta_2$, then compute the gradient for $W_2$</div>';
-  renderMath(row2);
+  const outputLearningHeader = document.createElement('div');
+  outputLearningHeader.className = 'panel-header output-learning-title';
+  outputLearningHeader.innerHTML = 'Output layer learning: compare prediction to target, form $\\delta_2$, then compute the gradient for $W_2$';
+  renderMath(outputLearningHeader);
   const r2Body = document.createElement('div');
   r2Body.className = 'output-learning-body';
 
@@ -232,17 +234,18 @@ function buildLayout(): void {
   costHeader.innerHTML = '$C=\\tfrac{1}{2}\\sum_k(a_{2,k}-y_k)^2$';
   renderMath(costHeader);
   costHeader.classList.add('data-hidden');
-  const outputHeaderRow = document.createElement('div');
-  outputHeaderRow.className = 'output-equation-row';
-  outputHeaderRow.appendChild(psHeader);
-  outputHeaderRow.appendChild(costHeader);
-  psBlock.appendChild(outputHeaderRow);
-  const gradientRow = document.createElement('div');
-  gradientRow.className = 'output-gradient-row';
+  const outputStateGroup = document.createElement('div');
+  outputStateGroup.className = 'output-state-group';
+  outputStateGroup.appendChild(costHeader);
+  outputStateGroup.appendChild(r2Vectors);
+  const outputGradientGroup = document.createElement('div');
+  outputGradientGroup.className = 'output-gradient-group';
+  outputGradientGroup.appendChild(outputLearningHeader);
+  outputGradientGroup.appendChild(psHeader);
   perSampleNablaW2.element.classList.add('data-hidden');
-  gradientRow.appendChild(perSampleNablaW2.element);
-  gradientRow.appendChild(r2Vectors);
-  psBlock.appendChild(gradientRow);
+  outputGradientGroup.appendChild(perSampleNablaW2.element);
+  psBlock.appendChild(outputStateGroup);
+  psBlock.appendChild(outputGradientGroup);
   r2Body.appendChild(psBlock);
 
   row2.appendChild(r2Body);
