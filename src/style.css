@@ -149,6 +149,10 @@ body {
 .phase-chip.active   { background: var(--gold); color: #0e1f2e; }
 .phase-chip.done     { background: #2a5a3c; }
 .phase-chip.pinned   { background: #2a4a6a; }
+.phase-chip.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
 .phase-explainer {
   font-size: 12px;

@@ -12,6 +12,9 @@ const CHIP_LABELS: Record<Phase, string> = {
   [Phase.HiddenDelta]: '5. Hidden δ',
 };
 
+const LOCKED_EXPLAINER =
+  'Press Start to load the first MNIST training sample. Once a sample is available, the steps unlock so you can walk through the forward pass, loss, gradients, and backpropagation.';
+
 /**
  * Voice-over text for each phase. Written so a student who only reads the
  * banner can still follow what's happening — what formula, which quantities
@@ -50,6 +53,7 @@ export class PhaseChips {
   private chipEls: HTMLElement[] = [];
   private currentPhase: Phase = Phase.Forward;
   private stepMode = true;
+  private enabled = false;
 
   constructor() {
     this.element = document.createElement('div');
@@ -61,7 +65,7 @@ export class PhaseChips {
       chip.className = 'phase-chip';
       chip.textContent = CHIP_LABELS[phase];
       chip.addEventListener('click', () => {
-        if (!this.stepMode) return;
+        if (!this.enabled || !this.stepMode) return;
         this.element.dispatchEvent(new CustomEvent('phase-jump', { detail: phase, bubbles: true }));
       });
       this.chipEls.push(chip);
@@ -83,11 +87,19 @@ export class PhaseChips {
     this.refresh();
   }
 
+  setEnabled(on: boolean): void {
+    this.enabled = on;
+    this.refresh();
+  }
+
   private refresh(): void {
     for (let i = 0; i < PhaseCount; i++) {
       const el = this.chipEls[i];
-      el.classList.remove('active', 'done', 'pinned');
-      if (!this.stepMode) {
+      el.classList.remove('active', 'done', 'pinned', 'disabled');
+      el.setAttribute('aria-disabled', `${!this.enabled}`);
+      if (!this.enabled) {
+        el.classList.add('disabled');
+      } else if (!this.stepMode) {
         el.classList.add('pinned');
       } else if (i < this.currentPhase) {
         el.classList.add('done');
@@ -95,8 +107,9 @@ export class PhaseChips {
         el.classList.add('active');
       }
     }
+    const explainer = this.enabled ? EXPLAINERS[this.currentPhase] : LOCKED_EXPLAINER;
     this.explainerElement.innerHTML =
-      `<div class="phase-detail">${escapeHtml(EXPLAINERS[this.currentPhase]).replace(/\n/g, '<br>')}</div>`;
+      `<div class="phase-detail">${escapeHtml(explainer).replace(/\n/g, '<br>')}</div>`;
     renderMath(this.explainerElement);
   }
 }

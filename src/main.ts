@@ -540,6 +540,7 @@ function handleWorkerMessage(ev: MessageEvent<WorkerToMain>): void {
         msg.snapshot.predictedLabel === msg.snapshot.trueLabel ? 'var(--green)' : 'var(--red)';
       drawSampleImage(msg.snapshot.pixels, msg.snapshot.inputSide);
       currentPhase = stepMode ? Phase.Forward : Phase.HiddenDelta;
+      phaseChips.setEnabled(true);
       applyCurrentPhase();
       updateNextButtonLabel();
       break;
@@ -681,6 +682,7 @@ function resetLessonDisplay(): void {
   focusedWeight = null;
   focusedHidden = null;
   currentPhase = Phase.Forward;
+  phaseChips.setEnabled(false);
   phaseChips.setPhase(currentPhase);
   updateNextButtonLabel();
 
