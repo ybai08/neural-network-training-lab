@@ -310,7 +310,7 @@ function buildLayout(): void {
   hiddenToggle.setAttribute('aria-expanded', 'false');
   hiddenToggle.innerHTML = `
     <span class="collapse-caret" aria-hidden="true">›</span>
-    <span class="collapse-title">Step 5: Hidden Layer Backpropagation</span>
+    <span class="collapse-title">Hidden Layer Backpropagation (Step 5)</span>
     <small>Show hidden activations and $\\delta_1$ details</small>`;
   renderMath(hiddenToggle);
   hiddenSection.appendChild(hiddenToggle);
