@@ -22,6 +22,10 @@ let throttleMs = 0;
 let stopRequested = false;
 let started = false;
 let stepResolve: (() => void) | null = null;
+const QUICK_TEST_COUNT = 500;
+const MIN_AUTO_PREVIEW_MS = 100;
+const AUTO_YIELD_EVERY = 200;
+let lastAutoPreviewAt = 0;
 
 const ctx: DedicatedWorkerGlobalScope = self as any;
 
@@ -34,6 +38,7 @@ ctx.onmessage = (ev: MessageEvent<MainToWorker>) => {
       epochs = msg.epochs;
       seed = msg.seed;
       stepMode = msg.stepMode;
+      lastAutoPreviewAt = 0;
       break;
     case 'start':
       if (started) break;
@@ -64,7 +69,10 @@ function releaseStepGate(): void {
 function waitForStep(): Promise<void> {
   if (stepMode) return new Promise<void>(resolve => { stepResolve = resolve; });
   if (throttleMs > 0) return new Promise(resolve => setTimeout(resolve, throttleMs));
-  return Promise.resolve();
+  return yieldToEventLoop();
+}
+function yieldToEventLoop(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0));
 }
 
 async function run(): Promise<void> {
@@ -85,12 +93,14 @@ async function run(): Promise<void> {
       x: img,
       label: mnist!.test.labels[i],
     }));
+    const quickTest = test.slice(0, Math.min(QUICK_TEST_COUNT, test.length));
 
     post({ type: 'status', text: `Training CNN: ${train.length} samples, ${epochs} epochs, mini-batch ${miniBatchSize}, η=${learningRate}` });
 
     const indices = new Int32Array(train.length);
     for (let i = 0; i < indices.length; i++) indices[i] = i;
     const rngShuffle = mulberry32(seed ^ 0xA5A5A5A5);
+    let samplesSeen = 0;
 
     for (let epoch = 0; epoch < epochs; epoch++) {
       if (stopRequested) break;
@@ -105,21 +115,32 @@ async function run(): Promise<void> {
         const batch: { x: Float64Array; y: Float64Array }[] = [];
         for (let k = start; k < end; k++) batch.push(train[indices[k]]);
 
+        let sentSampleForBatch = false;
         await net.updateMiniBatch(batch, learningRate, async (predicted) => {
           if (!net || !net.lastTrace) return;
-          const snap = buildSnapshot(net, predicted, train[indices[start + net.miniBatchSampleIndex]]);
-          post({ type: 'sample', snapshot: snap });
-          await waitForStep();
+          const sampleNo = samplesSeen + net.miniBatchSampleIndex + 1;
+          if (shouldPostSamplePreview(sampleNo)) {
+            const snap = buildSnapshot(net, predicted, train[indices[start + net.miniBatchSampleIndex]]);
+            post({ type: 'sample', snapshot: snap });
+            sentSampleForBatch = true;
+            await waitForStep();
+          } else if (!stepMode && sampleNo % AUTO_YIELD_EVERY === 0) {
+            await yieldToEventLoop();
+          }
         });
         if (stopRequested) break;
-        post({ type: 'miniBatchApplied' });
+        if (stepMode || sentSampleForBatch) post({ type: 'miniBatchApplied' });
+        samplesSeen += end - start;
+        if (shouldPostQuickMetric(samplesSeen)) {
+          postEvaluation(net, quickTest, epoch + samplesSeen / train.length, `update ${samplesSeen.toLocaleString()}`);
+        }
       }
 
       if (stopRequested) break;
       post({ type: 'status', text: `Evaluating epoch ${epoch + 1}/${epochs}…` });
       const correct = net.evaluate(test);
       const meanLoss = net.meanLoss(test);
-      post({ type: 'epoch', snapshot: { epoch, meanTestLoss: meanLoss, testCorrect: correct, testTotal: test.length } });
+      post({ type: 'epoch', snapshot: { epoch, meanTestLoss: meanLoss, testCorrect: correct, testTotal: test.length, label: `epoch ${epoch + 1}` } });
     }
 
     post({ type: 'done' });
@@ -163,6 +184,41 @@ function argMax(v: Float64Array): number {
   let best = 0, bestVal = v[0];
   for (let i = 1; i < v.length; i++) if (v[i] > bestVal) { bestVal = v[i]; best = i; }
   return best;
+}
+function shouldPostQuickMetric(samplesSeen: number): boolean {
+  if (samplesSeen <= 500) return samplesSeen % 50 === 0;
+  return samplesSeen % 1000 === 0;
+}
+function shouldPostSamplePreview(sampleNo: number): boolean {
+  if (stepMode) return true;
+  if (sampleNo === 1) {
+    lastAutoPreviewAt = performance.now();
+    return true;
+  }
+  const now = performance.now();
+  const previewInterval = Math.max(MIN_AUTO_PREVIEW_MS, throttleMs);
+  if (now - lastAutoPreviewAt < previewInterval) return false;
+  lastAutoPreviewAt = now;
+  return true;
+}
+function postEvaluation(
+  n: ConvNet,
+  testData: ReadonlyArray<{ x: Float64Array; label: number }>,
+  epoch: number,
+  label: string,
+): void {
+  const correct = n.evaluate(testData);
+  const meanLoss = n.meanLoss(testData);
+  post({
+    type: 'epoch',
+    snapshot: {
+      epoch,
+      meanTestLoss: meanLoss,
+      testCorrect: correct,
+      testTotal: testData.length,
+      label,
+    },
+  });
 }
 function mulberry32(s: number): () => number {
   let a = s >>> 0;

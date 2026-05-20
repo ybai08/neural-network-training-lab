@@ -10,6 +10,7 @@ export interface MatrixViewOptions {
   cellHeight?: number;
   rowLabelPrefix?: string;
   colLabelPrefix?: string;
+  colLabelEvery?: number;
   /** Fixed denominator for the colour-alpha calc; leave undefined to auto-scale to max|v|. */
   fixedScale?: number;
 }
@@ -22,6 +23,7 @@ export class MatrixView {
   private cellHeight: number;
   private rowLabelPrefix: string | undefined;
   private colLabelPrefix: string | undefined;
+  private colLabelEvery: number;
   private fixedScale: number | undefined;
   private highlighted: { row: number; col: number } | null = null;
 
@@ -30,6 +32,7 @@ export class MatrixView {
     this.cellHeight = opts.cellHeight ?? 22;
     this.rowLabelPrefix = opts.rowLabelPrefix;
     this.colLabelPrefix = opts.colLabelPrefix;
+    this.colLabelEvery = opts.colLabelEvery ?? 1;
     this.fixedScale = opts.fixedScale;
 
     this.element = document.createElement('div');
@@ -50,6 +53,7 @@ export class MatrixView {
     if (opts.cellHeight != null) this.cellHeight = opts.cellHeight;
     if (opts.rowLabelPrefix !== undefined) this.rowLabelPrefix = opts.rowLabelPrefix;
     if (opts.colLabelPrefix !== undefined) this.colLabelPrefix = opts.colLabelPrefix;
+    if (opts.colLabelEvery != null) this.colLabelEvery = Math.max(1, Math.floor(opts.colLabelEvery));
     if (opts.fixedScale !== undefined) this.fixedScale = opts.fixedScale;
   }
 
@@ -71,9 +75,12 @@ export class MatrixView {
     const html: string[] = [];
     html.push(`<div class="mv-grid" style="position:relative;width:${labelW + cols * this.cellWidth}px;height:${labelH + rows * this.cellHeight}px;">`);
     // Column labels.
+    const colLabelW = Math.max(this.cellWidth, 22);
     for (let c = 0; c < cols; c++) {
+      if (c % this.colLabelEvery !== 0) continue;
       const lbl = this.colLabelPrefix != null ? `${this.colLabelPrefix}${c}` : `${c}`;
-      html.push(`<div class="mv-collabel" style="left:${labelW + c * this.cellWidth}px;width:${this.cellWidth}px;height:${labelH}px;">${lbl}</div>`);
+      const left = labelW + c * this.cellWidth - (colLabelW - this.cellWidth) / 2;
+      html.push(`<div class="mv-collabel" style="left:${left}px;width:${colLabelW}px;height:${labelH}px;">${lbl}</div>`);
     }
     // Row labels + cells.
     for (let r = 0; r < rows; r++) {
@@ -142,7 +149,7 @@ export function formatNum(v: number): string {
   return ' 0.00';
 }
 
-function formatCellNum(v: number, cellWidth: number): string {
+export function formatCellNum(v: number, cellWidth: number): string {
   if (cellWidth >= 24) return formatNum(v);
   if (Math.abs(v) >= 100) return v >= 0 ? `+${v.toFixed(0)}` : `${v.toFixed(0)}`;
   if (Math.abs(v) >= 10) return v >= 0 ? `+${v.toFixed(0)}` : `${v.toFixed(0)}`;

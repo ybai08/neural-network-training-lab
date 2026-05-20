@@ -6,12 +6,13 @@
 //
 // Storage matches convnet.ts: K[(oc · IC + ic) · KH + ky) · KW + kx].
 
-import { cellColor } from './matrix-view';
+import { cellColor, formatCellNum, formatNum } from './matrix-view';
 
 export interface FilterBankViewOptions {
   cellSize?: number;
   gap?: number;
   showOutputLabel?: boolean;
+  inputLabelPrefix?: string;
 }
 
 export class FilterBankView {
@@ -19,17 +20,45 @@ export class FilterBankView {
   private cellSize: number;
   private gap: number;
   private showOutputLabel: boolean;
+  private inputLabelPrefix: string;
+  private highlighted: FilterBankCell | null = null;
 
   constructor(opts: FilterBankViewOptions = {}) {
     this.cellSize = opts.cellSize ?? 14;
     this.gap = opts.gap ?? 8;
     this.showOutputLabel = opts.showOutputLabel ?? true;
+    this.inputLabelPrefix = opts.inputLabelPrefix ?? 'in';
 
     this.element = document.createElement('div');
     this.element.className = 'filter-bank';
     this.element.style.display = 'flex';
     this.element.style.flexDirection = 'column';
     this.element.style.gap = `${this.gap / 2}px`;
+    this.element.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const index = t.dataset.index;
+      if (index == null) return;
+      this.element.dispatchEvent(new CustomEvent('cell-click', {
+        detail: {
+          index: +index,
+          outChannel: +(t.dataset.outChannel ?? 0),
+          inChannel: +(t.dataset.inChannel ?? 0),
+          ky: +(t.dataset.ky ?? 0),
+          kx: +(t.dataset.kx ?? 0),
+        },
+        bubbles: true,
+      }));
+    });
+  }
+
+  setOptions(opts: FilterBankViewOptions): void {
+    if (opts.cellSize != null) this.cellSize = opts.cellSize;
+    if (opts.gap != null) {
+      this.gap = opts.gap;
+      this.element.style.gap = `${this.gap / 2}px`;
+    }
+    if (opts.showOutputLabel !== undefined) this.showOutputLabel = opts.showOutputLabel;
+    if (opts.inputLabelPrefix !== undefined) this.inputLabelPrefix = opts.inputLabelPrefix;
   }
 
   /** Update with a flat 4D kernel tensor of shape (outC × inC × kH × kW). */
@@ -58,14 +87,22 @@ export class FilterBankView {
 
     for (let ic = 0; ic < inC; ic++) {
       html.push(`<div class="fb-row">`);
-      if (this.showOutputLabel) html.push(`<div class="fb-rowlabel">${inC > 1 ? `in ${ic}` : ''}</div>`);
+      if (this.showOutputLabel) html.push(`<div class="fb-rowlabel">${inC > 1 ? `${this.inputLabelPrefix} ${ic}` : ''}</div>`);
       for (let oc = 0; oc < outC; oc++) {
         const off = (oc * inC + ic) * kH * kW;
         html.push(`<div class="fb-grid" style="width:${gridW}px;height:${gridH}px;">`);
         for (let ky = 0; ky < kH; ky++) {
           for (let kx = 0; kx < kW; kx++) {
             const v = kernels[off + ky * kW + kx];
-            html.push(`<div class="fb-cell" style="left:${kx * this.cellSize}px;top:${ky * this.cellSize}px;width:${this.cellSize}px;height:${this.cellSize}px;background:${cellColor(v, scale)};"></div>`);
+            const index = off + ky * kW + kx;
+            const isHl = sameFilterCell(this.highlighted, { outChannel: oc, inChannel: ic, ky, kx });
+            const text = this.cellSize >= 18 ? formatCellNum(v, this.cellSize) : '';
+            html.push(
+              `<div class="fb-cell mv-cell${isHl ? ' mv-cell-hl' : ''}" ` +
+              `data-index="${index}" data-out-channel="${oc}" data-in-channel="${ic}" data-ky="${ky}" data-kx="${kx}" ` +
+              `style="left:${kx * this.cellSize}px;top:${ky * this.cellSize}px;` +
+              `width:${this.cellSize}px;height:${this.cellSize}px;background:${cellColor(v, scale)};" title="${formatNum(v)}">${text}</div>`,
+            );
           }
         }
         html.push(`</div>`);
@@ -74,4 +111,31 @@ export class FilterBankView {
     }
     this.element.innerHTML = html.join('');
   }
+
+  /** Outline one filter weight cell in yellow. Pass null to clear. */
+  setHighlight(cell: FilterBankCell | null): void {
+    if (sameFilterCell(cell, this.highlighted)) return;
+    this.highlighted = cell;
+    this.element.querySelectorAll<HTMLElement>('.fb-cell.mv-cell-hl').forEach(el => el.classList.remove('mv-cell-hl'));
+    if (cell) {
+      const selector =
+        `.fb-cell[data-out-channel="${cell.outChannel}"][data-in-channel="${cell.inChannel}"]` +
+        `[data-ky="${cell.ky}"][data-kx="${cell.kx}"]`;
+      const el = this.element.querySelector<HTMLElement>(selector);
+      if (el) el.classList.add('mv-cell-hl');
+    }
+  }
+}
+
+export interface FilterBankCell {
+  outChannel: number;
+  inChannel: number;
+  ky: number;
+  kx: number;
+}
+
+function sameFilterCell(a: FilterBankCell | null, b: FilterBankCell | null): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return a.outChannel === b.outChannel && a.inChannel === b.inChannel && a.ky === b.ky && a.kx === b.kx;
 }

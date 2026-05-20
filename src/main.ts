@@ -32,6 +32,12 @@ let focusedHidden: number | null = null;
 let miniBatchSize = 1;
 let learningRate = 3.0;
 
+function appHref(route: '' | 'convolutional/'): string {
+  const base = import.meta.env.BASE_URL;
+  if (!base || base === './') return route ? `/${route}` : '/';
+  return `${base}${route}`;
+}
+
 // ─── Worker ───────────────────────────────────────────────────────────────
 
 let worker = createWorker();
@@ -114,7 +120,7 @@ function buildLayout(): void {
   headerActions.className = 'lesson-actions';
   const nav = document.createElement('nav');
   nav.className = 'page-nav';
-  nav.innerHTML = '<a href="/" class="current">Regular NN</a><a href="/convolutional/">CNN</a>';
+  nav.innerHTML = `<a href="${appHref('')}" class="current">Regular NN</a><a href="${appHref('convolutional/')}">CNN</a>`;
   headerActions.appendChild(nav);
   const trainingInfo = document.createElement('span');
   trainingInfo.className = 'info-tip compact-info site-info';
@@ -421,7 +427,7 @@ function buildLayout(): void {
   const settingsGroup = document.createElement('div');
   settingsGroup.className = 'control-group control-settings';
   const lrLabel = document.createElement('label');
-  lrLabel.textContent = 'Learning rate';
+  lrLabel.textContent = 'Learning rate (η)';
   const lrInput = document.createElement('input');
   lrInput.type = 'number';
   lrInput.min = '0.1';

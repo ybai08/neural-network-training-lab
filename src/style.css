@@ -34,6 +34,19 @@ body {
   min-height: 0;
   overflow: hidden;
 }
+body.cnn-page {
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+body.cnn-page #app {
+  min-height: 100dvh;
+  height: auto;
+  overflow: visible;
+}
+body.cnn-page #main {
+  overflow: visible;
+}
 /* Regular NN lesson header */
 .lesson-header {
   display: flex;
@@ -515,6 +528,309 @@ body {
   min-height: 0;
   height: 100%;
 }
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  height: 135px;
+  min-height: 135px;
+  max-height: 135px;
+  grid-auto-rows: minmax(0, 1fr);
+}
+
+/* CNN lesson workspace */
+.cnn-step-explainer {
+  min-height: 47px;
+}
+.cnn-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: stretch;
+  padding-right: 12px;
+}
+.cnn-left-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.cnn-layer-panel {
+  overflow: hidden;
+}
+.cnn-step-rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  align-items: stretch;
+}
+.cnn-step-row {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  background: var(--bg-cell);
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+}
+.cnn-step-row-header {
+  margin-bottom: 5px;
+}
+.cnn-steps-locked .cnn-step-visuals {
+  visibility: hidden;
+  pointer-events: none;
+}
+.cnn-step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+.cnn-step-row-title {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+}
+.cnn-step-row-subtitle {
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.38;
+  font-weight: 600;
+}
+.cnn-step-facts {
+  display: grid;
+  gap: 4px;
+}
+.cnn-step-fact {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 6px;
+  align-items: start;
+  padding: 4px 5px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-soft);
+}
+.cnn-step-fact span {
+  color: rgba(224, 232, 240, 0.62);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.cnn-step-fact b {
+  color: var(--text);
+  font-family: Consolas, ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.cnn-step-visuals {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 7px;
+  align-items: start;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.cnn-step-section {
+  min-width: 0;
+  padding: 3px 2px;
+  background: transparent;
+  border: 0;
+}
+.cnn-wide-section {
+  grid-column: 1 / -1;
+}
+.cnn-params-section {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  width: auto;
+  max-width: 100%;
+  justify-self: stretch;
+}
+.cnn-activation-section {
+  grid-column: 2;
+  width: max-content;
+  justify-self: end;
+}
+.cnn-classifier-params-section {
+  grid-column: 1;
+  justify-self: stretch;
+}
+.cnn-classifier-output-section {
+  grid-column: 2;
+  width: max-content;
+  justify-self: end;
+  align-self: start;
+  padding-left: 14px;
+}
+.cnn-params-pair {
+  width: 100%;
+  min-width: 0;
+}
+.cnn-params-pair-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: max-content;
+}
+.cnn-step-section-label {
+  margin: 0 0 5px;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.cnn-output-vector-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.cnn-step-section-label .katex,
+.cnn-output-vector-label .katex {
+  font-size: 1em;
+}
+.cnn-step-section-body {
+  max-width: 100%;
+  overflow: visible;
+}
+.cnn-params-section .cnn-step-section-body {
+  max-width: none;
+}
+.cnn-step-row .fm-grid,
+.cnn-step-row .fb-grid {
+  border: 0;
+}
+.cnn-layer-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  align-items: start;
+  gap: 8px;
+  min-width: 0;
+  overflow: visible;
+  padding: 2px 0 4px;
+}
+.cnn-layer-scroll .layer-block {
+  min-width: 0;
+  max-height: 230px;
+  overflow: visible;
+}
+.cnn-layer-scroll .layer-arrow {
+  display: none;
+}
+.cnn-layer-scroll .feature-maps,
+.cnn-layer-scroll .filter-bank,
+.cnn-layer-scroll .matrix-view {
+  max-width: 100%;
+  overflow: visible;
+}
+.cnn-output-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+.cnn-output-vectors {
+  overflow: visible;
+  padding-bottom: 2px;
+}
+.cnn-output-in-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: max-content;
+}
+.cnn-charts-row {
+  height: 120px;
+}
+.cnn-sample-loss {
+  width: 100%;
+  justify-content: flex-end;
+  text-align: right;
+}
+#cnn-step-classifier {
+  padding: 11px 12px 13px;
+}
+#cnn-step-classifier .cnn-step-visuals {
+  grid-template-columns: minmax(0, 1fr) max-content;
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 981px) {
+  #cnn-step-classifier .cnn-classifier-params-section {
+    padding-top: 6px;
+  }
+}
+#cnn-step-classifier .mv-collabel {
+  color: rgba(156, 193, 224, 0.72);
+}
+.cnn-step-target {
+  transition: outline-color 120ms ease, box-shadow 120ms ease;
+}
+.active-cnn-step {
+  outline: 2px solid rgba(255, 215, 0, 0.78);
+  outline-offset: -2px;
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.28);
+}
+.cnn-map-panel {
+  overflow: hidden;
+}
+.cnn-network-map {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  background: var(--bg-cell);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.cnn-map-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cnn-map-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 210px;
+}
+.cnn-map-link {
+  stroke: rgba(156, 193, 224, 0.18);
+  stroke-width: 1;
+}
+.cnn-map-layer[data-cnn-step] {
+  cursor: pointer;
+}
+.cnn-map-layer.active-cnn-step {
+  outline: none;
+  box-shadow: none;
+}
+.cnn-map-hitbox {
+  fill: transparent;
+  pointer-events: all;
+}
+.cnn-map-node {
+  fill: #102030;
+  stroke: rgba(224, 232, 240, 0.8);
+  stroke-width: 1.5;
+}
+.cnn-map-layer-input .cnn-map-node {
+  opacity: 0.22;
+}
+.cnn-map-layer-title {
+  fill: rgba(224, 232, 240, 0.6);
+  font-family: "Segoe UI";
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
 
 /* Buttons + controls */
 button {
@@ -682,15 +998,48 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
   width: 32px; font-family: Consolas, ui-monospace, monospace; font-size: 10px;
   color: var(--text-dim); text-align: right; flex-shrink: 0;
 }
+.cnn-params-pair .filter-bank .fb-row {
+  gap: 3px;
+}
+.cnn-params-pair .filter-bank .fb-corner,
+.cnn-params-pair .filter-bank .fb-rowlabel {
+  width: 18px;
+  font-size: 8px;
+}
+#cnn-step-conv2 .filter-bank .fb-corner,
+#cnn-step-conv2 .filter-bank .fb-rowlabel {
+  width: 31px;
+}
 .filter-bank .fb-collabel {
   font-family: Consolas, ui-monospace, monospace; font-size: 10px;
   color: var(--text-dim); text-align: center;
+}
+.cnn-params-pair .filter-bank .fb-collabel {
+  font-size: 8px;
 }
 .filter-bank .fb-grid {
   position: relative; background: var(--bg-cell); border: 1px solid var(--border-soft);
   flex-shrink: 0;
 }
-.filter-bank .fb-cell { position: absolute; }
+.filter-bank .fb-cell {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Consolas, ui-monospace, monospace;
+  font-size: 7px;
+  color: #f0f4f8;
+  border: 0.5px solid rgba(224, 232, 240, 0.25);
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+#cnn-step-conv1 .fb-cell,
+#cnn-step-conv1 .vv-cell {
+  font-size: 7.6px;
+}
 
 /* Layer blocks on the CNN page (one wrapper per layer) */
 .layer-block {
@@ -738,10 +1087,43 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
   display: flex;
   flex-direction: column;
   min-height: 0;
+  height: 100%;
+  overflow: hidden;
   position: relative;
 }
-.chart-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
-.chart-value { color: var(--text-dim); }
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  flex: 0 0 16px;
+  min-height: 16px;
+  max-height: 16px;
+  gap: 8px;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 16px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+.chart-header > span:first-child {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chart-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chart svg {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto !important;
+}
 .chart-placeholder {
   position: absolute;
   left: 8px;
@@ -793,7 +1175,8 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
   .details-body,
   .sample-card,
   .diagram-panel,
-  .learning-workspace {
+  .learning-workspace,
+  .cnn-workspace {
     width: 100%;
     max-width: 100%;
     min-width: 0;
@@ -906,13 +1289,16 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
     height: clamp(270px, 72vw, 340px);
   }
   .learning-workspace,
-  .hidden-bottom-section {
+  .hidden-bottom-section,
+  .cnn-workspace {
     grid-template-columns: 1fr;
   }
-  .learning-workspace {
+  .learning-workspace,
+  .cnn-workspace {
     padding-right: 0;
   }
-  .learning-left-stack {
+  .learning-left-stack,
+  .cnn-left-stack {
     min-width: 0;
     width: 100%;
   }
@@ -991,6 +1377,99 @@ button.next-action:hover:not(:disabled) { background: #ffe875; }
   .charts-row {
     grid-template-columns: 1fr !important;
     height: 260px !important;
+    min-height: 260px !important;
+    max-height: 260px !important;
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+  }
+  .cnn-layer-panel {
+    max-width: 100%;
+    overflow: visible;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cnn-step-rows {
+    grid-template-columns: 1fr;
+  }
+  .cnn-step-row {
+    grid-template-columns: 1fr;
+    padding: 8px;
+  }
+  .cnn-step-visuals {
+    grid-template-columns: 1fr;
+  }
+  .cnn-params-section,
+  .cnn-activation-section {
+    grid-column: 1;
+    grid-row: auto;
+    width: auto;
+  }
+  .cnn-step-section-body {
+    overflow: visible;
+  }
+  .cnn-layer-scroll {
+    width: 100%;
+    max-width: 100%;
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+  .cnn-layer-scroll .layer-block {
+    max-height: none;
+  }
+  .cnn-map-panel {
+    min-height: 0;
+  }
+  .cnn-network-map {
+    height: clamp(420px, 118vw, 560px);
+    min-height: clamp(420px, 118vw, 560px);
+    padding: 0;
+    overflow: hidden;
+  }
+  .cnn-output-panel {
+    height: auto;
+  }
+  #cnn-step-classifier .cnn-step-visuals {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  #cnn-step-classifier .cnn-classifier-output-section,
+  #cnn-step-classifier .cnn-classifier-params-section {
+    grid-column: auto;
+    width: 100%;
+    max-width: 100%;
+    justify-self: stretch;
+    align-self: stretch;
+    padding: 8px;
+    background: var(--bg-cell);
+    border: 1px solid var(--border);
+  }
+  #cnn-step-classifier .cnn-classifier-output-section {
+    order: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  #cnn-step-classifier .cnn-classifier-params-section {
+    order: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    contain: paint;
+  }
+  #cnn-step-classifier .cnn-classifier-output-section .cnn-step-section-body,
+  #cnn-step-classifier .cnn-output-in-row {
+    width: max-content;
+    max-width: none;
+    align-items: flex-start;
+  }
+  #cnn-step-classifier .cnn-classifier-params-section .cnn-step-section-body,
+  #cnn-step-classifier .cnn-classifier-params-section .cnn-params-pair,
+  #cnn-step-classifier .cnn-classifier-params-section .cnn-params-pair-content {
+    width: max-content;
+    max-width: none;
+  }
+  .cnn-output-vectors {
+    overflow: visible;
   }
   .hidden-collapse-toggle {
     grid-template-columns: auto 1fr;
