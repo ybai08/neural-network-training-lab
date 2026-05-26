@@ -223,19 +223,21 @@ export class ConvNet {
 
   /** Argmax accuracy on a test set. */
   evaluate(test: ReadonlyArray<{ x: Float64Array; label: number }>): number {
-    let correct = 0;
-    for (const { x, label } of test) {
-      const t = this.forward(x);
-      if (argMax(t.output) === label) correct++;
-    }
-    return correct;
+    return this.evaluateWithLoss(test).correct;
   }
 
   /** Mean ½‖a − y‖² over the test set with y one-hot. */
   meanLoss(test: ReadonlyArray<{ x: Float64Array; label: number }>): number {
+    return this.evaluateWithLoss(test).meanLoss;
+  }
+
+  /** Accuracy and mean loss in one pass; useful because CNN forward passes allocate more. */
+  evaluateWithLoss(test: ReadonlyArray<{ x: Float64Array; label: number }>): { correct: number; meanLoss: number } {
+    let correct = 0;
     let total = 0;
     for (const { x, label } of test) {
       const t = this.forward(x);
+      if (argMax(t.output) === label) correct++;
       let s = 0;
       for (let k = 0; k < OUTPUTS; k++) {
         const d = t.output[k] - (k === label ? 1 : 0);
@@ -243,7 +245,10 @@ export class ConvNet {
       }
       total += 0.5 * s;
     }
-    return total / test.length;
+    return {
+      correct,
+      meanLoss: test.length > 0 ? total / test.length : 0,
+    };
   }
 }
 

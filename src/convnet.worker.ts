@@ -22,8 +22,8 @@ let throttleMs = 0;
 let stopRequested = false;
 let started = false;
 let stepResolve: (() => void) | null = null;
-const QUICK_TEST_COUNT = 500;
-const MIN_AUTO_PREVIEW_MS = 100;
+const QUICK_TEST_COUNT = 200;
+const MIN_AUTO_PREVIEW_MS = 200;
 const AUTO_YIELD_EVERY = 200;
 let lastAutoPreviewAt = 0;
 
@@ -33,6 +33,9 @@ ctx.onmessage = (ev: MessageEvent<MainToWorker>) => {
   const msg = ev.data;
   switch (msg.type) {
     case 'init':
+      stopRequested = false;
+      started = false;
+      releaseStepGate();
       learningRate = msg.learningRate;
       miniBatchSize = msg.miniBatchSize;
       epochs = msg.epochs;
@@ -115,21 +118,21 @@ async function run(): Promise<void> {
         const batch: { x: Float64Array; y: Float64Array }[] = [];
         for (let k = start; k < end; k++) batch.push(train[indices[k]]);
 
-        let sentSampleForBatch = false;
         await net.updateMiniBatch(batch, learningRate, async (predicted) => {
           if (!net || !net.lastTrace) return;
           const sampleNo = samplesSeen + net.miniBatchSampleIndex + 1;
           if (shouldPostSamplePreview(sampleNo)) {
             const snap = buildSnapshot(net, predicted, train[indices[start + net.miniBatchSampleIndex]]);
             post({ type: 'sample', snapshot: snap });
-            sentSampleForBatch = true;
             await waitForStep();
           } else if (!stepMode && sampleNo % AUTO_YIELD_EVERY === 0) {
             await yieldToEventLoop();
           }
         });
         if (stopRequested) break;
-        if (stepMode || sentSampleForBatch) post({ type: 'miniBatchApplied' });
+        // In auto mode the full CNN render is fairly heavy. The next preview
+        // will carry fresh weights, so avoid a second immediate repaint here.
+        if (stepMode) post({ type: 'miniBatchApplied' });
         samplesSeen += end - start;
         if (shouldPostQuickMetric(samplesSeen)) {
           postEvaluation(net, quickTest, epoch + samplesSeen / train.length, `update ${samplesSeen.toLocaleString()}`);
@@ -138,8 +141,7 @@ async function run(): Promise<void> {
 
       if (stopRequested) break;
       post({ type: 'status', text: `Evaluating epoch ${epoch + 1}/${epochs}…` });
-      const correct = net.evaluate(test);
-      const meanLoss = net.meanLoss(test);
+      const { correct, meanLoss } = net.evaluateWithLoss(test);
       post({ type: 'epoch', snapshot: { epoch, meanTestLoss: meanLoss, testCorrect: correct, testTotal: test.length, label: `epoch ${epoch + 1}` } });
     }
 
@@ -187,7 +189,8 @@ function argMax(v: Float64Array): number {
 }
 function shouldPostQuickMetric(samplesSeen: number): boolean {
   if (samplesSeen <= 500) return samplesSeen % 50 === 0;
-  return samplesSeen % 1000 === 0;
+  if (samplesSeen <= 5000) return samplesSeen % 500 === 0;
+  return samplesSeen % 5000 === 0;
 }
 function shouldPostSamplePreview(sampleNo: number): boolean {
   if (stepMode) return true;
@@ -207,8 +210,7 @@ function postEvaluation(
   epoch: number,
   label: string,
 ): void {
-  const correct = n.evaluate(testData);
-  const meanLoss = n.meanLoss(testData);
+  const { correct, meanLoss } = n.evaluateWithLoss(testData);
   post({
     type: 'epoch',
     snapshot: {

@@ -116,8 +116,13 @@ const CNN_LOCKED_EXPLAINER =
 
 // ─── Worker ───────────────────────────────────────────────────────────────
 
-const worker = new Worker(new URL('./convnet.worker.ts', import.meta.url), { type: 'module' });
+let worker = createWorker();
 function post(msg: MainToWorker): void { worker.postMessage(msg); }
+function createWorker(): Worker {
+  const nextWorker = new Worker(new URL('./convnet.worker.ts', import.meta.url), { type: 'module' });
+  nextWorker.onmessage = handleWorkerMessage;
+  return nextWorker;
+}
 
 // ─── UI components ────────────────────────────────────────────────────────
 
@@ -1287,12 +1292,13 @@ function cnnStepForSelection(selection: CnnParamSelection): number {
 
 // ─── Worker message handler ───────────────────────────────────────────────
 
-worker.onmessage = (ev: MessageEvent<ConvWorkerToMain>) => {
+function handleWorkerMessage(ev: MessageEvent<ConvWorkerToMain>): void {
   const msg = ev.data;
   const nodes = (window as any).__nodes;
   switch (msg.type) {
     case 'status':
       nodes.statusText.textContent = msg.text;
+      nodes.statusText.style.color = '';
       break;
     case 'sample': {
       latestSnapshot = msg.snapshot;
@@ -1342,14 +1348,21 @@ worker.onmessage = (ev: MessageEvent<ConvWorkerToMain>) => {
       nodes.nextBtn.disabled = true;
       nodes.lrInput.disabled = false;
       nodes.statusText.textContent = 'Training complete.';
+      worker.terminate();
+      worker = createWorker();
       break;
     case 'error':
       nodes.statusText.textContent = `Error: ${msg.message}`;
       nodes.statusText.style.color = 'var(--red)';
+      nodes.startBtn.disabled = false;
+      nodes.stopBtn.disabled = true;
+      nodes.nextBtn.disabled = true;
       nodes.lrInput.disabled = false;
+      worker.terminate();
+      worker = createWorker();
       break;
   }
-};
+}
 
 // ─── Rendering ────────────────────────────────────────────────────────────
 
